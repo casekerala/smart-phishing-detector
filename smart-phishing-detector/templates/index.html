@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Smart Phishing Link Detector</title>
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-dark: #0b0f1a;
+      --bg-card: rgba(255, 255, 255, 0.08);
+      --border-glass: rgba(255, 255, 255, 0.15);
+      --text-main: #e6e8ee;
+      --text-muted: #9aa3b2;
+  
+      --safe: #22c55e;
+      --warn: #facc15;
+      --danger: #ef4444;
+      --primary: #3b82f6;
+    }
+  
+    body {
+      background: radial-gradient(circle at top, #12172a, #05070f);
+      color: var(--text-main);
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      min-height: 100vh;
+    }
+  
+    .navbar {
+      background: transparent !important;
+      border-bottom: 1px solid var(--border-glass);
+    }
+  
+    .navbar-brand span {
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+  
+    .hero {
+      padding-top: 4rem;
+    }
+  
+    .card-detector {
+      background: var(--bg-card);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--border-glass);
+      border-radius: 1.25rem;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+    }
+  
+    .form-control {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-main);
+      border: 1px solid var(--border-glass);
+    }
+  
+    .form-control::placeholder {
+      color: var(--text-muted);
+    }
+  
+    .form-control:focus {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--primary);
+      box-shadow: none;
+    }
+  
+    .input-group-text {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-glass);
+      color: var(--text-muted);
+    }
+  
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      border: none;
+      font-weight: 600;
+    }
+  
+    .btn-primary:hover {
+      opacity: 0.9;
+    }
+  
+    .result-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-glass);
+      border-radius: 1rem;
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+  
+    .verdict-safe {
+      color: var(--safe);
+    }
+  
+    .verdict-warn {
+      color: var(--warn);
+    }
+  
+    .verdict-danger {
+      color: var(--danger);
+    }
+  
+    .badge-score {
+      font-size: 0.85rem;
+      padding: 0.4rem 0.7rem;
+      border-radius: 999px;
+    }
+  
+    .sources-box {
+      margin-top: 1rem;
+    }
+  
+    .sources-box li {
+      background: transparent;
+      border: none;
+      padding: 0.5rem 0;
+    }
+  
+    footer {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      padding: 2rem 0;
+    }
+
+    /* ---------- Detection Sources Styling ---------- */
+
+    .sources-box {
+      color: var(--text-main);
+    }
+
+    .sources-box strong {
+      color: #e5e7eb; /* light gray / white */
+    }
+
+    .source-detected {
+      color: var(--danger); /* red */
+      font-weight: 600;
+    }
+
+    .source-not-detected {
+      color: var(--safe); /* green */
+      font-weight: 600;
+    }
+
+    .source-details {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin-left: 0.25rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+     xmlns="http://www.w3.org/2000/svg">
+  <path d="M12 2L4 5V11C4 16.55 7.84 21.74 12 23C16.16 21.74 20 16.55 20 11V5L12 2Z"
+        stroke="#3b82f6" stroke-width="2"/>
+  <path d="M9 12L11 14L15 10"
+        stroke="#3b82f6" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+      <span class="text-white">Smart Phishing Link Detector</span>
+      </a>
+      <span class="navbar-text small text-white-50">
+        BSc (Hons) Cybersecurity &amp; Networks – Computing Project
+      </span>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <main class="container hero">
+    <div class="row justify-content-center">
+      <div class="col-lg-10">
+        <div class="row align-items-center g-4">
+          <div class="col-lg-6">
+            <h1 class="hero-title h2 mb-3">
+              <span class="text-primary">Check suspicious links before you click them.</span>
+            </h1>
+            <p class="hero-subtitle mb-4">
+              Paste any URL and this tool checks it using simple local heuristics
+              (and later external threat-intel APIs) to give you an instant verdict.
+            </p>
+            <ul class="section-muted list-unstyled mb-4">
+              <li><i class="bi bi-check-circle text-success me-2"></i>No URLs are opened or rendered</li>
+              <li><i class="bi bi-check-circle text-success me-2"></i>Back end processes only the text of the URL</li>
+              <li><i class="bi bi-check-circle text-success me-2"></i>Clear verdict: Likely Safe / Suspicious / Phishing</li>
+            </ul>
+          </div>
+
+          <div class="col-lg-6">
+            <div class="card card-detector">
+              <div class="card-body p-4 p-md-4">
+                <span h2 class="text-primary fw-bold">Try the detector</span>
+                
+                <p class="text-white">
+                  This page talks to the Flask backend at <code>/api/check</code>.
+                </p>
+
+                <!-- Form -->
+                <form id="checkForm" novalidate>
+                  <div class="input-group input-group-lg mb-2">
+                    <span class="input-group-text">
+                      <i class="bi bi-link-45deg"></i>
+                    </span>
+                    <input id="urlInput" type="url" class="form-control"
+                           placeholder="https://example.com/login"
+                           aria-label="URL to check" required autocomplete="off">
+                    <button id="checkBtn" class="btn btn-primary" type="submit">
+                      <span class="btn-label-default">
+                        <i class="bi bi-search"></i> Check
+                      </span>
+                      <span class="btn-label-loading d-none">
+                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                        Checking…
+                      </span>
+                    </button>
+                  </div>
+                  <div class="form-text mb-3">
+                    Press <span class="kbd">Enter</span> or click <strong>Check</strong>.
+                  </div>
+                </form>
+
+                <!-- Alerts -->
+                <div id="alertBox" class="minh-40"></div>
+
+                <!-- Result -->
+                <div id="resultCard" class="result-card d-none fade-enter">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                      <div class="small text-white">Verdict</div>
+                      <div id="verdictText" class="h5 mb-0 fw-bold">—</div>
+                    </div>
+                    <div class="text-end">
+                      <div class="small text-muted">Risk Score</div>
+                      <span id="scoreBadge" class="badge badge-score bg-secondary">--</span>
+                    </div>
+                  </div>
+                  <div class="small text-white-50">
+                    Checked at <span id="checkedAt">—</span>
+                  </div>
+                </div>
+                
+                <div id="sourcesBox" class="sources-box"></div>
+                
+                <div id="sourcesBox" class="mt-3"></div>
+              </div>
+            </div>
+
+            <p class="section-muted mt-3">
+              <i class="bi bi-shield-lock me-1"></i>
+              For safety, the backend never opens the URL; it only analyses the text of the link.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="border-top mt-5">
+    <div class="container text-center">
+      Smart Phishing Link Detector • Student Project • Flask-based web application
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    const API_ENDPOINT = "/api/check";
+
+    const form = document.getElementById("checkForm");
+    const urlInput = document.getElementById("urlInput");
+    const checkBtn = document.getElementById("checkBtn");
+    const alertBox = document.getElementById("alertBox");
+    const resultCard = document.getElementById("resultCard");
+    const verdictText = document.getElementById("verdictText");
+    const scoreBadge = document.getElementById("scoreBadge");
+    const checkedAt = document.getElementById("checkedAt");
+
+    function setLoading(isLoading) {
+      checkBtn.disabled = isLoading;
+      checkBtn.querySelector(".btn-label-default").classList.toggle("d-none", isLoading);
+      checkBtn.querySelector(".btn-label-loading").classList.toggle("d-none", !isLoading);
+    }
+
+    function showAlert(type, message) {
+      alertBox.innerHTML = "";
+      const div = document.createElement("div");
+      div.className = "alert alert-" + type + " fade-enter";
+      div.textContent = message;
+      alertBox.appendChild(div);
+    }
+
+    function verdictBadgeClass(verdict) {
+      if (!verdict) return "text-bg-secondary";
+      const v = verdict.toLowerCase();
+      if (v.includes("phishing")) return "text-bg-danger";
+      if (v.includes("suspicious")) return "text-bg-warning";
+      if (v.includes("safe")) return "text-bg-success";
+      return "text-bg-secondary";
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const url = urlInput.value.trim();
+      alertBox.innerHTML = "";
+      resultCard.classList.add("d-none");
+
+      if (!url) {
+        showAlert("warning", "Please paste a URL to check.");
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const res = await fetch(API_ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url })
+        });
+
+        if (!res.ok) {
+          throw new Error("Server returned " + res.status);
+        }
+
+        const data = await res.json();
+        const sourcesBox = document.getElementById("sourcesBox");
+
+        if (data.sources && data.sources.length > 0) {
+  let html = `
+    <div class="small fw-semibold mb-2 text-white">
+      Detection Sources
+    </div>
+    <ul class="list-unstyled sources-box">
+  `;
+
+  data.sources.forEach(src => {
+    html += `
+      <li class="mb-2">
+        <strong>${src.name}</strong> —
+        <span class="${src.match ? 'source-detected' : 'source-not-detected'}">
+          ${src.match ? 'Detected' : 'Not detected'}
+        </span>
+        <div class="source-details">
+          ${typeof src.details === "string"
+            ? src.details
+            : JSON.stringify(src.details)}
+        </div>
+      </li>
+    `;
+  });
+
+  html += `</ul>`;
+  sourcesBox.innerHTML = html;
+}
+        
+
+        // Find Google Safe Browsing result from backend response
+        
+        const verdict = data.verdict || "Unknown";
+        const score = Number.isFinite(data.score) ? data.score : "--";
+        const time = data.checked_at ? new Date(data.checked_at).toLocaleString() : "—";
+
+        verdictText.textContent = verdict;
+        verdictText.className = "h5 mb-0 result-pill badge " + verdictBadgeClass(verdict);
+        scoreBadge.textContent = "Score: " + score;
+        scoreBadge.className = "badge px-3 py-2 " + verdictBadgeClass(verdict);
+        checkedAt.textContent = time;
+
+        resultCard.classList.remove("d-none");
+      } catch (err) {
+        console.error(err);
+        showAlert("danger", "Could not contact the backend. Is Flask running?");
+      } finally {
+        setLoading(false);
+      }
+    });
+  </script>
+</body>
+</html>
